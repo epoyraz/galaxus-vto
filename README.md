@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./virtual_try_on_16x9.png" alt="Galaxus Virtual Try-On" width="100%" />
+</p>
+
 # Galaxus Virtual Try-On
 
 Virtual try-on for Galaxus storefronts, in two parts:
