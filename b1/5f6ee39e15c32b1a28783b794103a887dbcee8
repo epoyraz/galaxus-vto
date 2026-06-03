@@ -1,0 +1,19 @@
+README.md
+  s_0ba028ff7557f7::t_dda8c26d27db51 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b15f6ee39e15c32b1a28783b794103a887dbcee8",
+  "prompts": {},
+  "sessions": {
+    "s_0ba028ff7557f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b74735b9-8e4e-4d37-a70a-4f28a2538ae4",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Enes Poyraz <epoyraz.eth@googlemail.com>"
+    }
+  }
+}
