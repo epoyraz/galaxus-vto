@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Galaxus Try-On</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header>
+    <h1>Virtual Try-On</h1>
+    <button id="settingsToggle" class="icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <section id="settings" class="settings hidden">
+    <label for="apiBase">API base URL</label>
+    <input type="text" id="apiBase" placeholder="http://localhost:5056" />
+    <p class="hint">Where the FLUX Virtual Try-On API is running.</p>
+  </section>
+
+  <!-- Garment (auto-detected from the Galaxus product page) -->
+  <section class="card">
+    <div class="card-head">
+      <h2>1 · Garment</h2>
+      <button id="detectBtn" class="link-btn" title="Re-detect from page">↻ from page</button>
+    </div>
+    <div id="garmentBox" class="preview empty">
+      <span id="garmentHint">Open a Galaxus product page to detect the item.</span>
+      <img id="garmentImg" hidden alt="Garment" />
+    </div>
+    <p id="garmentTitle" class="caption"></p>
+    <label class="link-btn file-label">
+      Use my own garment image
+      <input type="file" id="garmentFile" accept="image/*" hidden />
+    </label>
+  </section>
+
+  <!-- Person photo (dropped / picked by the user) -->
+  <section class="card">
+    <h2>2 · Your photo</h2>
+    <label id="personDrop" class="drop">
+      <span id="personHint">Click or drop a full-body photo of yourself</span>
+      <img id="personImg" hidden alt="Person" />
+      <input type="file" id="personFile" accept="image/*" hidden />
+    </label>
+  </section>
+
+  <!-- Prompt -->
+  <section class="card">
+    <h2>3 · Prompt</h2>
+    <textarea id="prompt" rows="3"></textarea>
+  </section>
+
+  <button id="generateBtn" class="primary" disabled>Generate try-on</button>
+
+  <section id="result" class="result"></section>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FLUX Virtual Try-On</title>
+  <style>
+    :root { color-scheme: light dark; --accent: #5b8def; --bg: #0f1115; --card: #181b22; --fg: #e7e9ee; --muted: #9aa3b2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+    header { padding: 24px; text-align: center; border-bottom: 1px solid #232732; }
+    header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+    header p { margin: 0; color: var(--muted); font-size: .9rem; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border: 1px solid #232732; border-radius: 14px; padding: 16px; }
+    .card h2 { margin: 0 0 12px; font-size: 1rem; }
+    label { display: block; font-size: .8rem; color: var(--muted); margin: 10px 0 4px; }
+    input[type=text], textarea, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #2c313d; background: #0f1218; color: var(--fg); font-size: .9rem; }
+    textarea { min-height: 70px; resize: vertical; }
+    .drop { border: 2px dashed #2c313d; border-radius: 12px; padding: 18px; text-align: center; cursor: pointer; transition: border-color .15s; }
+    .drop:hover { border-color: var(--accent); }
+    .drop img { max-height: 220px; max-width: 100%; border-radius: 8px; margin-top: 10px; }
+    .drop input { display: none; }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    button { margin-top: 16px; width: 100%; padding: 12px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .result { margin-top: 20px; text-align: center; min-height: 40px; }
+    .result img { max-width: 100%; border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.45); }
+    .status { color: var(--muted); font-size: .9rem; }
+    .error { color: #ff8080; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FLUX Virtual Try-On</h1>
+    <p>Powered by Black Forest Labs · <a href="/scalar/v1">API reference</a> · <a href="/health">health</a></p>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h2>1 · Person image</h2>
+        <label class="drop" id="personDrop">
+          <span id="personLabel">Click or drop a person photo</span>
+          <input type="file" id="person" accept="image/*" />
+          <img id="personPreview" hidden />
+        </label>
+      </div>
+      <div class="card">
+        <h2>2 · Garment reference</h2>
+        <label class="drop" id="garmentDrop">
+          <span id="garmentLabel">Click or drop a garment photo</span>
+          <input type="file" id="garment" accept="image/*" />
+          <img id="garmentPreview" hidden />
+        </label>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>3 · Prompt &amp; options</h2>
+      <label for="prompt">Styling prompt</label>
+      <textarea id="prompt">The person of image 1, maintaining exactly their face and pose, wearing the garments of image 2.</textarea>
+      <label for="format">Output format</label>
+      <select id="format">
+        <option value="webp">webp</option>
+        <option value="png">png</option>
+        <option value="jpeg">jpeg</option>
+      </select>
+      <button id="go">Generate try-on</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function wireDrop(inputId, labelId, previewId) {
+      const input = $(inputId), label = $(labelId), preview = $(previewId);
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        label.hidden = true;
+        preview.hidden = false;
+        preview.src = URL.createObjectURL(file);
+      });
+    }
+    wireDrop("person", "personLabel", "personPreview");
+    wireDrop("garment", "garmentLabel", "garmentPreview");
+
+    $("go").addEventListener("click", async () => {
+      const person = $("person").files?.[0];
+      const garment = $("garment").files?.[0];
+      const result = $("result");
+
+      if (!person || !garment) {
+        result.innerHTML = '<p class="error">Please select both a person and a garment image.</p>';
+        return;
+      }
+
+      const btn = $("go");
+      btn.disabled = true;
+      result.innerHTML = '<p class="status">Submitting & waiting for the result… (this can take a few seconds)</p>';
+
+      const form = new FormData();
+      form.append("person", person);
+      form.append("garment", garment);
+      form.append("prompt", $("prompt").value);
+      form.append("outputFormat", $("format").value);
+
+      try {
+        // wait=true makes the API submit and poll until the image is ready.
+        const res = await fetch("/api/vto/upload?wait=true", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) {
+          result.innerHTML = `<p class="error">${data.title || "Error"}: ${data.detail || res.status}</p>`;
+        } else if (data.imageUrl) {
+          result.innerHTML = `<p class="status">Status: ${data.status}</p><img src="${data.imageUrl}" alt="Try-on result" />`;
+        } else {
+          result.innerHTML = `<p class="status">Status: ${data.status} (no image returned)</p>`;
+        }
+      } catch (err) {
+        result.innerHTML = `<p class="error">Request failed: ${err}</p>`;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

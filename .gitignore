@@ -1,0 +1,16 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+
+# User-specific / secrets (never commit the BFL API key)
+*.user
+secrets.json
+
+# IDE
+.vs/
+.idea/
+*.suo
+
+# OS
+Thumbs.db
+.DS_Store

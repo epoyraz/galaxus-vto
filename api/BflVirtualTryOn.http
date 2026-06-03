@@ -1,0 +1,29 @@
+@host = http://localhost:5056
+
+### Health check (shows whether the API key is configured)
+GET {{host}}/health
+
+### Submit a try-on with image URLs (async). Copy the returned id.
+POST {{host}}/api/vto
+Content-Type: application/json
+
+{
+  "prompt": "The person of image 1, maintaining exactly their face and pose, wearing the white t-shirt of image 2.",
+  "person": "https://example.com/person.png",
+  "garment": "https://example.com/garment.png",
+  "outputFormat": "webp"
+}
+
+### Poll the job by id
+GET {{host}}/api/vto/REPLACE_WITH_TASK_ID
+
+### Submit and wait synchronously for the result image URL
+POST {{host}}/api/vto/try-on
+Content-Type: application/json
+
+{
+  "prompt": "The person of image 1, maintaining exactly their face and pose, wearing the garments of image 2.",
+  "person": "https://example.com/person.png",
+  "garment": "https://example.com/garment.png",
+  "outputFormat": "png"
+}
